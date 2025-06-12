@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useCallback, useRef, useState } from 'react';
-import { ChatMessage } from '@/types/message';
+import React, {useCallback, useRef, useState} from 'react';
+import {ChatMessage} from '@/types/message';
 import ChatSection from '@/components/ChatSection';
 
-import { useChatSocket } from '@/hooks/useChatSocket';
-import PersonaSelector from '@/pages/PersonaSelector';
-import { personas } from '@/constants/persona';
-import { Persona } from '@/types/persona';
+import {useChatSocket} from '@/hooks/useChatSocket';
+import {Persona} from '@/types/persona';
+import PersonaSelector from "@/pages/PersonaSelectorPage";
 
 export default function ChatPage() {
   const [input, setInput] = useState('');
@@ -38,11 +37,10 @@ export default function ChatPage() {
   if (!systemMessage || !persona) {
     return (
       <PersonaSelector
-        onConfirm={(selectedPersona) => {
+        action={(selectedPersona) => {
           setSystemMessage(selectedPersona.prompt);
           setPersona(selectedPersona);
         }}
-        personas={personas}
       />
     );
   }

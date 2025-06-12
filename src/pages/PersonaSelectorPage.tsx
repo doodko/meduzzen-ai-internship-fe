@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { Persona } from '@/types/persona';
+'use client';
+
+import React, {useState} from 'react';
+import {Persona} from '@/types/persona';
+import {personas} from "@/constants/persona";
 
 export default function PersonaSelector({
-  onConfirm,
-  personas,
+  action,
 }: {
-  onConfirm: (persona: Persona) => void;
-  personas: Persona[];
+  action: (persona: Persona) => void;
 }) {
   const [selected, setSelected] = useState<Persona | null>(null);
 
@@ -37,7 +38,7 @@ export default function PersonaSelector({
         {selected && (
           <button
             className="cursor-pointer mt-8 px-6 py-3 rounded-lg bg-blue-800 hover:bg-blue-900 font-semibold"
-            onClick={() => onConfirm(selected)}
+            onClick={() => action(selected)}
           >
             Start Chatting
           </button>
