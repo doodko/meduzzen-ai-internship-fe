@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
 import { ChatMessage } from '@/types/message';
 import { ChatStreamEvent } from '@/types/events';
+import {config} from "@/config/config";
 
 export function useChatSocket(
   setMessages: Dispatch<SetStateAction<ChatMessage[]>>,
@@ -14,7 +15,7 @@ export function useChatSocket(
     if (!systemMessage) return;
 
     const sessionId = Date.now().toString();
-    const socket = new WebSocket(`ws://localhost:5000/api/chat/ws/${sessionId}`);
+    const socket = new WebSocket(`${config.WS_URL}/${sessionId}`);
     socketRef.current = socket;
     assistantMessageRef.current = '';
 
