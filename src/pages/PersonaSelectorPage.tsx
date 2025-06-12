@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, {useState} from 'react';
-import {Persona} from '@/types/persona';
-import {personas} from "@/constants/persona";
+import React, { useState } from "react";
+import { Persona } from "@/types/persona";
+import { personas } from "@/constants/persona";
 
 export default function PersonaSelector({
   action,
@@ -22,8 +22,8 @@ export default function PersonaSelector({
             onClick={() => setSelected(persona)}
             className={`cursor-pointer flex items-center gap-4 px-6 py-4 rounded-xl border transition duration-300 text-left ${
               selected?.id === persona.id
-                ? 'bg-[#3f404e] border-blue-700'
-                : 'bg-[#343541] border-[#2c2d36] hover:bg-[#3f404e]'
+                ? "bg-[#3f404e] border-blue-700"
+                : "bg-[#343541] border-[#2c2d36] hover:bg-[#3f404e]"
             }`}
           >
             <div className="text-2xl">{persona.icon}</div>

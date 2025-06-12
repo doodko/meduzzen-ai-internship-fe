@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
-import { ChatMessage } from '@/types/message';
-import UserMessage from '@/components/UserMessage';
-import AgentMessage from '@/components/AgentMessage';
-import { Persona } from '@/types/persona';
+import React, { useEffect, useRef } from "react";
+import { ChatMessage } from "@/types/message";
+import UserMessage from "@/components/UserMessage";
+import AgentMessage from "@/components/AgentMessage";
+import { Persona } from "@/types/persona";
 
 interface ChatSectionProps {
   messages: ChatMessage[];
@@ -10,11 +10,15 @@ interface ChatSectionProps {
   persona: Persona;
 }
 
-const ChatSection: React.FC<ChatSectionProps> = ({ messages, loading, persona }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({
+  messages,
+  loading,
+  persona,
+}) => {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
   return (
@@ -27,10 +31,11 @@ const ChatSection: React.FC<ChatSectionProps> = ({ messages, loading, persona })
         ) : (
           <>
             {messages.map((msg, idx) => {
-              if (msg.type === 'user') return <UserMessage key={idx} message={msg} />;
+              if (msg.type === "user")
+                return <UserMessage key={idx} message={msg} />;
               return <AgentMessage key={idx} message={msg} persona={persona} />;
             })}
-            {loading && !messages.some((m) => m.type === 'agent') && (
+            {loading && !messages.some((m) => m.type === "agent") && (
               <div className="flex justify-start items-start gap-2">
                 <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
                   {persona.icon}

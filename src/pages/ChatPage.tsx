@@ -1,37 +1,41 @@
-'use client';
+"use client";
 
-import React, {useCallback, useRef, useState} from 'react';
-import {ChatMessage} from '@/types/message';
-import ChatSection from '@/components/ChatSection';
+import React, { useCallback, useRef, useState } from "react";
+import { ChatMessage } from "@/types/message";
+import ChatSection from "@/components/ChatSection";
 
-import {useChatSocket} from '@/hooks/useChatSocket';
-import {Persona} from '@/types/persona';
+import { useChatSocket } from "@/hooks/useChatSocket";
+import { Persona } from "@/types/persona";
 import PersonaSelector from "@/pages/PersonaSelectorPage";
 
 export default function ChatPage() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [systemMessage, setSystemMessage] = useState<string | null>(null);
   const [persona, setPersona] = useState<Persona | null>(null);
 
   const socketRef = useChatSocket(setMessages, setLoading, systemMessage);
-  const assistantMessageRef = useRef('');
+  const assistantMessageRef = useRef("");
 
   const handleSendMessage = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      if (!input.trim() || !socketRef.current || socketRef.current.readyState !== WebSocket.OPEN)
+      if (
+        !input.trim() ||
+        !socketRef.current ||
+        socketRef.current.readyState !== WebSocket.OPEN
+      )
         return;
 
-      const userMessage: ChatMessage = { type: 'user', text: input.trim() };
+      const userMessage: ChatMessage = { type: "user", text: input.trim() };
       setMessages((prev) => [...prev, userMessage]);
       setLoading(true);
-      assistantMessageRef.current = '';
+      assistantMessageRef.current = "";
       socketRef.current.send(input.trim());
-      setInput('');
+      setInput("");
     },
-    [input, socketRef]
+    [input, socketRef],
   );
 
   if (!systemMessage || !persona) {
@@ -54,7 +58,10 @@ export default function ChatPage() {
       <ChatSection messages={messages} loading={loading} persona={persona} />
 
       <div className="px-4 py-3 bg-[#40414f] border-t border-[#2c2d36]">
-        <form className="flex items-center space-x-2" onSubmit={handleSendMessage}>
+        <form
+          className="flex items-center space-x-2"
+          onSubmit={handleSendMessage}
+        >
           <input
             type="text"
             value={input}

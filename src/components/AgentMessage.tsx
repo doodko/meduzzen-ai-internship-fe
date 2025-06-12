@@ -1,9 +1,9 @@
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github-dark.css';
-import { ChatMessage } from '@/types/message';
-import { Persona } from '@/types/persona';
-import { JSX } from 'react';
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github-dark.css";
+import { ChatMessage } from "@/types/message";
+import { Persona } from "@/types/persona";
+import { JSX } from "react";
 
 export default function AgentMessage({
   message,
@@ -18,7 +18,9 @@ export default function AgentMessage({
         {persona.icon}
       </div>
       <div className="bg-[#444654] rounded-lg px-4 py-2 max-w-full whitespace-pre-wrap overflow-x-auto text-sm">
-        <ReactMarkdown rehypePlugins={[rehypeHighlight]}>{message.text}</ReactMarkdown>
+        <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+          {message.text}
+        </ReactMarkdown>
       </div>
     </div>
   );

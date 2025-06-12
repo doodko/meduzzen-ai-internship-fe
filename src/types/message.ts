@@ -1,4 +1,4 @@
 export type ChatMessage = {
-  type: 'user' | 'agent' | 'system';
+  type: "user" | "agent" | "system";
   text: string;
 };

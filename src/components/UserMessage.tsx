@@ -1,4 +1,4 @@
-import { ChatMessage } from '@/types/message';
+import { ChatMessage } from "@/types/message";
 
 export default function UserMessage({ message }: { message: ChatMessage }) {
   return (
