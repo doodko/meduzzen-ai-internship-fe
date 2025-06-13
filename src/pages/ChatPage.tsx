@@ -7,42 +7,51 @@ import ChatSection from "@/components/ChatSection";
 import { useChatSocket } from "@/hooks/useChatSocket";
 import { Persona } from "@/types/persona";
 import PersonaSelector from "@/pages/PersonaSelectorPage";
+import HeaderBar from "@/components/HeaderBar";
+import ChatInput from "@/components/ChatInput";
 
 export default function ChatPage() {
-  const [input, setInput] = useState("");
+  const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [systemMessage, setSystemMessage] = useState<string | null>(null);
+  const [personaPrompt, setPersonaPrompt] = useState<string | null>(null);
   const [persona, setPersona] = useState<Persona | null>(null);
 
-  const socketRef = useChatSocket(setMessages, setLoading, systemMessage);
+  const socketRef = useChatSocket(setMessages, setLoading, personaPrompt);
   const assistantMessageRef = useRef("");
 
   const handleSendMessage = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       if (
-        !input.trim() ||
+        !userInput.trim() ||
         !socketRef.current ||
         socketRef.current.readyState !== WebSocket.OPEN
-      )
+      ) {
         return;
+      }
 
-      const userMessage: ChatMessage = { type: "user", text: input.trim() };
+      const userMessage: ChatMessage = { type: "user", text: userInput.trim() };
       setMessages((prev) => [...prev, userMessage]);
       setLoading(true);
       assistantMessageRef.current = "";
-      socketRef.current.send(input.trim());
-      setInput("");
+      socketRef.current.send(userInput.trim());
+      setUserInput("");
     },
-    [input, socketRef],
+    [userInput, socketRef],
   );
 
-  if (!systemMessage || !persona) {
+  const resetChat = () => {
+    setMessages([]);
+    setPersonaPrompt(null);
+    setPersona(null);
+  };
+
+  if (!personaPrompt || !persona) {
     return (
       <PersonaSelector
         action={(selectedPersona) => {
-          setSystemMessage(selectedPersona.prompt);
+          setPersonaPrompt(selectedPersona.prompt);
           setPersona(selectedPersona);
         }}
       />
@@ -50,33 +59,14 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen bg-[#202123] text-white flex flex-col overflow-hidden">
-      <div className="text-center text-sm text-gray-400 py-2 border-b border-[#2c2d36]">
-        {`You’re chatting with ${persona.icon} ${persona.title}`}
-      </div>
-
+    <div className="h-screen flex flex-col overflow-hidden">
+      <HeaderBar persona={persona} onReset={resetChat} />
       <ChatSection messages={messages} loading={loading} persona={persona} />
-
-      <div className="px-4 py-3 bg-[#40414f] border-t border-[#2c2d36]">
-        <form
-          className="flex items-center space-x-2"
-          onSubmit={handleSendMessage}
-        >
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 rounded-lg bg-[#202123] text-white px-4 py-2 focus:outline-none focus:ring focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg"
-          >
-            Send
-          </button>
-        </form>
-      </div>
+      <ChatInput
+        input={userInput}
+        setInput={setUserInput}
+        onSubmit={handleSendMessage}
+      />
     </div>
   );
 }
