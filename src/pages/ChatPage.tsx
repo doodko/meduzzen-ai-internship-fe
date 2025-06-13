@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useRef, useState } from "react";
-import { ChatMessage } from "@/types/message";
+import { ChatMessage, ChatSessionMeta } from "@/types/message";
 import ChatSection from "@/components/ChatSection";
 
 import { useChatSocket } from "@/hooks/useChatSocket";
@@ -16,9 +16,23 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [personaPrompt, setPersonaPrompt] = useState<string | null>(null);
   const [persona, setPersona] = useState<Persona | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-  const socketRef = useChatSocket(setMessages, setLoading, personaPrompt);
+  const socketRef = useChatSocket(setMessages, setLoading, sessionId);
   const assistantMessageRef = useRef("");
+
+  async function createChatSession(
+    system_message: string,
+  ): Promise<ChatSessionMeta> {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ system_message }),
+    });
+
+    if (!res.ok) throw new Error("Failed to create chat session");
+    return res.json();
+  }
 
   const handleSendMessage = useCallback(
     (e: React.FormEvent) => {
@@ -45,14 +59,21 @@ export default function ChatPage() {
     setMessages([]);
     setPersonaPrompt(null);
     setPersona(null);
+    setSessionId(null);
   };
 
-  if (!personaPrompt || !persona) {
+  if (!personaPrompt || !persona || !sessionId) {
     return (
       <PersonaSelector
-        action={(selectedPersona) => {
-          setPersonaPrompt(selectedPersona.prompt);
-          setPersona(selectedPersona);
+        action={async (selectedPersona) => {
+          try {
+            const session = await createChatSession(selectedPersona.prompt);
+            setPersonaPrompt(session.system_message);
+            setPersona(selectedPersona);
+            setSessionId(session.session_id);
+          } catch (err) {
+            console.error("Session creation failed:", err);
+          }
         }}
       />
     );

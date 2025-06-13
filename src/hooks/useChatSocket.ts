@@ -1,92 +1,78 @@
-import { Dispatch, SetStateAction, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/types/message";
-import { ChatStreamEvent } from "@/types/events";
 import { config } from "@/config/config";
+import { ChatStreamEvent } from "@/types/events";
 
 export function useChatSocket(
-  setMessages: Dispatch<SetStateAction<ChatMessage[]>>,
-  setLoading: (val: boolean) => void,
-  systemMessage: string | null,
+  setMessages: (fn: (prev: ChatMessage[]) => ChatMessage[]) => void,
+  setLoading: (loading: boolean) => void,
+  sessionId: string | null,
 ) {
   const socketRef = useRef<WebSocket | null>(null);
-  const assistantMessageRef = useRef("");
 
   useEffect(() => {
-    if (!systemMessage) return;
+    if (!sessionId) return;
 
-    const sessionId = Date.now().toString();
     const socket = new WebSocket(`${config.WS_URL}/${sessionId}`);
     socketRef.current = socket;
-    assistantMessageRef.current = "";
-
-    socket.onopen = () => {
-      console.log("WebSocket connected");
-      socket.send(JSON.stringify({ type: "system", content: systemMessage }));
-    };
 
     socket.onmessage = (event) => {
-      const parsed: ChatStreamEvent = JSON.parse(event.data);
+      const data: ChatStreamEvent = JSON.parse(event.data);
 
-      switch (parsed.type) {
-        case "token": {
-          assistantMessageRef.current += parsed.content;
+      switch (data.type) {
+        case "token":
           setMessages((prev) => {
-            const hasPending = prev[prev.length - 1]?.type === "agent";
-            if (hasPending) {
-              const updated = [...prev];
-              updated[updated.length - 1] = {
-                type: "agent",
-                text: assistantMessageRef.current,
-              };
-              return updated;
-            } else {
+            const last = prev[prev.length - 1];
+            if (last?.type === "agent") {
               return [
-                ...prev,
-                { type: "agent", text: assistantMessageRef.current },
+                ...prev.slice(0, -1),
+                { ...last, text: last.text + data.content },
               ];
             }
+            return [...prev, { type: "agent", text: data.content }];
           });
           break;
-        }
 
-        case "tool_call": {
+        case "completion":
+          setLoading(false);
+          break;
+
+        case "error":
+          setMessages((prev) => [
+            ...prev,
+            { type: "system", text: data.content },
+          ]);
+          setLoading(false);
+          break;
+
+        case "tool_call":
           setMessages((prev) => [
             ...prev,
             {
               type: "system",
-              text: `Calling tool: ${parsed.tool} with args: ${JSON.stringify(parsed.args)}`,
+              text: `Calling tool: ${data.tool} with args: ${JSON.stringify(data.args)}`,
             },
           ]);
           break;
-        }
 
-        case "completion": {
-          setMessages((prev) => [
-            ...prev.slice(0, -1),
-            { type: "agent", text: parsed.final_response },
-          ]);
-          assistantMessageRef.current = "";
-          setLoading(false);
+        case "end":
           break;
-        }
-
-        case "error": {
-          setMessages((prev) => [
-            ...prev,
-            { type: "system", text: parsed.content },
-          ]);
-          break;
-        }
-
-        default:
-          console.warn("Unknown event type:", parsed);
       }
     };
 
-    socket.onclose = () => console.log("WebSocket disconnected");
+    socket.onerror = (e) => {
+      console.error("WebSocket error:", e);
+      setLoading(false);
+    };
 
-    return () => socket.close();
-  }, [systemMessage, setMessages, setLoading]);
+    socket.onclose = () => {
+      setLoading(false);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [sessionId]);
 
   return socketRef;
 }
