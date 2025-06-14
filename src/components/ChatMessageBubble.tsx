@@ -25,8 +25,9 @@ export default function ChatMessageBubble({
 
       <div
         className={`
-          ${isUser ? "bg-blue-600" : "bg-gray-700 "}
-          rounded-lg text-gray-300 px-4 py-2 max-w-full whitespace-pre-wrap overflow-x-auto sm:max-w-md
+          ${isUser ? "bg-blue-600" : "bg-gray-700"}
+          text-gray-300 rounded-lg px-4 py-2 whitespace-pre-wrap overflow-x-auto
+          max-w-[calc(100%-3.5rem)] sm:max-w-[calc(100%-5.5rem)] lg:max-w-prose
         `}
       >
         <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
