@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ChatMessage, ChatSessionMeta } from "@/types/message";
 import ChatSection from "@/components/ChatSection";
 
@@ -19,7 +19,6 @@ export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const socketRef = useChatSocket(setMessages, setLoading, sessionId);
-  const assistantMessageRef = useRef("");
 
   async function createChatSession(
     system_message: string,
@@ -48,7 +47,6 @@ export default function ChatPage() {
       const userMessage: ChatMessage = { type: "user", text: userInput.trim() };
       setMessages((prev) => [...prev, userMessage]);
       setLoading(true);
-      assistantMessageRef.current = "";
       socketRef.current.send(userInput.trim());
       setUserInput("");
     },
