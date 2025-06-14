@@ -3,6 +3,7 @@ node_modules/
 .swc/
 .*.env
 .idea
+.env*
 
 # Sentry Config File
 .env.sentry-build-plugin
