@@ -3,6 +3,7 @@ import { Persona } from "@/types/persona";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
+import Avatar from "@/components/Avatar";
 
 export default function ChatMessageBubble({
   message,
@@ -19,9 +20,7 @@ export default function ChatMessageBubble({
         isUser ? "flex-row-reverse" : "flex-row"
       }`}
     >
-      <div className="w-8 h-8 flex-shrink-0 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold">
-        {isUser ? "U" : persona.icon}
-      </div>
+      <Avatar name={isUser ? "U" : persona.icon} />
 
       <div
         className={`

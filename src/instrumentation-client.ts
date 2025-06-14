@@ -4,7 +4,7 @@ import { config } from "@/config/config";
 Sentry.init({
   dsn: config.SENTRY_DSN,
   tracesSampleRate: 1,
-  debug: config.ENVIRONMENT === "local",
+  debug: false,
   environment: config.ENVIRONMENT,
 });
 

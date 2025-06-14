@@ -3,6 +3,7 @@ import { ChatMessage } from "@/types/message";
 import { Persona } from "@/types/persona";
 import { motion } from "framer-motion";
 import ChatMessageBubble from "@/components/ChatMessageBubble";
+import Avatar from "@/components/Avatar";
 
 interface ChatSectionProps {
   messages: ChatMessage[];
@@ -52,9 +53,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({
 
           {loading && !messages.some((m) => m.type === "agent") && (
             <div className="flex justify-start items-start gap-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                {persona.icon}
-              </div>
+              <Avatar name={persona.icon} />
               <div className="bg-[#444654] rounded-lg px-4 py-2 max-w-xs sm:max-w-md animate-pulse">
                 <p>typing...</p>
               </div>
