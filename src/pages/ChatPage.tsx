@@ -9,6 +9,7 @@ import { Persona } from "@/types/persona";
 import PersonaSelector from "@/pages/PersonaSelectorPage";
 import HeaderBar from "@/components/HeaderBar";
 import ChatInput from "@/components/ChatInput";
+import { createChatSession } from "@/app/api/chat/calls";
 
 export default function ChatPage() {
   const [userInput, setUserInput] = useState("");
@@ -19,19 +20,6 @@ export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const socketRef = useChatSocket(setMessages, setLoading, sessionId);
-
-  async function createChatSession(
-    system_message: string,
-  ): Promise<ChatSessionMeta> {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ system_message }),
-    });
-
-    if (!res.ok) throw new Error("Failed to create chat session");
-    return res.json();
-  }
 
   const handleSendMessage = useCallback(
     (e: React.FormEvent) => {
