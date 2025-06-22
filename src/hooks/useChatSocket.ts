@@ -7,13 +7,14 @@ export function useChatSocket(
   setMessages: (fn: (prev: ChatMessage[]) => ChatMessage[]) => void,
   setLoading: (loading: boolean) => void,
   sessionId: string | null,
+  url: string = "",
 ) {
   const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (!sessionId) return;
 
-    const socket = new WebSocket(`${config.WS_URL}/${sessionId}`);
+    const socket = new WebSocket(`${config.WS_URL}${url}/${sessionId}`);
     socketRef.current = socket;
 
     socket.onmessage = (event) => {
