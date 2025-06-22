@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ChatMessage } from "@/types/message";
-import { useChatSocket } from "@/hooks/useChatSocket";
 import { createChatSession } from "@/app/api/chat/calls";
 import ChatInput from "@/components/ChatInput";
 import ChatSection from "@/components/ChatSection";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 const staticPersona = {
   id: "meduzzen",
@@ -22,8 +22,74 @@ export default function MeduzzenAssistantPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [interrupted, setInterrupted] = useState(false);
 
-  const socketRef = useChatSocket(setMessages, setLoading, sessionId, "/rag");
+  const socketRef = useRef<WebSocket | null>(null);
+  const streamingStoppedRef = useRef(false);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const socket = new WebSocket(
+      `${process.env.NEXT_PUBLIC_WS_URL}/rag/${sessionId}`,
+    );
+    socketRef.current = socket;
+
+    socket.onopen = () => {
+      console.log("WebSocket connected");
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === "token") {
+        if (streamingStoppedRef.current || interrupted) return;
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.type === "agent") {
+            return [
+              ...prev.slice(0, -1),
+              { ...last, text: last.text + data.content },
+            ];
+          } else {
+            return [...prev, { type: "agent", text: data.content }];
+          }
+        });
+        return;
+      }
+
+      if (data.type === "tool_start") {
+        const log = `[calling tool ${data.tool} with args: ${JSON.stringify(data.args)}]`;
+        setMessages((prev) => [...prev, { type: "system", text: log }]);
+        return;
+      }
+
+      if (data.type === "completion") {
+        if (!streamingStoppedRef.current) {
+          setLoading(false);
+          setInterrupted(false);
+        }
+        return;
+      }
+
+      if (data.type === "error") {
+        setMessages((prev) => [
+          ...prev,
+          { type: "system", text: data.content },
+        ]);
+        setLoading(false);
+        return;
+      }
+    };
+
+    socket.onerror = (err) => {
+      console.error("WebSocket error:", err);
+      toast.error("WebSocket connection error");
+      setLoading(false);
+    };
+
+    return () => socket.close();
+  }, [sessionId]);
 
   const initializeSession = async () => {
     try {
@@ -32,6 +98,7 @@ export default function MeduzzenAssistantPage() {
       return session.session_id;
     } catch (err) {
       console.error("Failed to create session:", err);
+      toast.error("Failed to create session");
       return null;
     }
   };
@@ -50,11 +117,25 @@ export default function MeduzzenAssistantPage() {
       const userMessage: ChatMessage = { type: "user", text: userInput.trim() };
       setMessages((prev) => [...prev, userMessage]);
       setLoading(true);
+      setInterrupted(false);
+      streamingStoppedRef.current = false;
       socketRef.current.send(userInput.trim());
       setUserInput("");
     },
-    [userInput, socketRef],
+    [userInput],
   );
+
+  const handleStop = () => {
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN)
+      return;
+    streamingStoppedRef.current = true;
+    setInterrupted(true);
+    setLoading(false);
+    setMessages((prev) => [
+      ...prev,
+      { type: "system", text: "[interrupted by user]" },
+    ]);
+  };
 
   if (!sessionId) {
     return (
@@ -87,6 +168,9 @@ export default function MeduzzenAssistantPage() {
         input={userInput}
         setInput={setUserInput}
         onSubmit={handleSendMessage}
+        disableUpload={loading}
+        loading={loading}
+        onStop={handleStop}
       />
     </div>
   );

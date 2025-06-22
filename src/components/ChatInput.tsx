@@ -7,6 +7,8 @@ interface ChatInputProps {
   setInput: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   disableUpload?: boolean;
+  loading?: boolean;
+  onStop?: () => void;
 }
 
 export default function ChatInput({
@@ -14,6 +16,8 @@ export default function ChatInput({
   setInput,
   onSubmit,
   disableUpload = false,
+  loading,
+  onStop,
 }: ChatInputProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -92,12 +96,22 @@ export default function ChatInput({
             />
           </div>
         </div>
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg"
-        >
-          Send
-        </button>
+        {loading ? (
+          <button
+            type="button"
+            onClick={onStop}
+            className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-4 py-2 rounded-lg"
+          >
+            Stop
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg"
+          >
+            Send
+          </button>
+        )}
       </form>
     </div>
   );
