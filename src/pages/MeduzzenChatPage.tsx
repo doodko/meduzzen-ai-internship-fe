@@ -6,6 +6,7 @@ import { useChatSocket } from "@/hooks/useChatSocket";
 import { createChatSession } from "@/app/api/chat/calls";
 import ChatInput from "@/components/ChatInput";
 import ChatSection from "@/components/ChatSection";
+import { motion } from "framer-motion";
 
 const staticPersona = {
   id: "meduzzen",
@@ -61,13 +62,16 @@ export default function MeduzzenAssistantPage() {
         <div className="text-xl font-medium text-gray-200 max-w-md">
           {staticPersona.welcomeMessage}
         </div>
-        <button
+        <motion.button
           onClick={initializeSession}
           type="submit"
-          className="px-6 py-2 bg-gray-950 rounded-lg text-white hover:bg-blue-700 transition cursor-pointer"
+          className="px-6 py-2 bg-gray-950 rounded-lg text-white  transition cursor-pointer"
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           Start chat
-        </button>
+        </motion.button>
       </div>
     );
   }
