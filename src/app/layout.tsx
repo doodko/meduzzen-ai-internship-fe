@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import React from "react";
+import { Toaster } from "sonner";
 
 const geistSans = Roboto({
   variable: "--font-geist-sans",
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Toaster position="bottom-right" theme="dark" richColors />
         {children}
       </body>
     </html>

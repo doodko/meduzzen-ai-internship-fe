@@ -1,5 +1,6 @@
 import React from "react";
-import IconButton from "./IconButton"; // adjust path as needed
+import IconButton from "./IconButton";
+import { toast } from "sonner";
 
 interface ChatInputProps {
   input: string;
@@ -32,9 +33,11 @@ export default function ChatInput({
       });
 
       if (!response.ok) throw new Error("Upload failed");
-      console.log("Files uploaded successfully");
+
+      toast.success("File(s) uploaded successfully!");
     } catch (error) {
-      console.error("Error uploading files:", error);
+      toast.error("Upload failed. Please try again.");
+      console.error("Upload error:", error);
     } finally {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -63,7 +66,6 @@ export default function ChatInput({
               disabled={disableUpload}
               title="Attach file"
             >
-              {/* Inline your SVG icon here */}
               <svg
                 width="20"
                 height="20"
