@@ -1,6 +1,8 @@
 import React from "react";
 import IconButton from "./IconButton";
 import { toast } from "sonner";
+import { ChatMessage } from "@/types/message";
+import { config } from "@/config/config";
 
 interface ChatInputProps {
   input: string;
@@ -9,7 +11,15 @@ interface ChatInputProps {
   disableUpload?: boolean;
   loading?: boolean;
   onStop?: () => void;
+  setMessages: (fn: (prev: ChatMessage[]) => ChatMessage[]) => void;
 }
+
+type UploadedFile = {
+  filename: string;
+  size: number;
+  status: "uploaded" | "skipped";
+  reason?: string;
+};
 
 export default function ChatInput({
   input,
@@ -18,6 +28,7 @@ export default function ChatInput({
   disableUpload = false,
   loading,
   onStop,
+  setMessages,
 }: ChatInputProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -31,14 +42,38 @@ export default function ChatInput({
     });
 
     try {
-      const response = await fetch("/api/upload", {
+      const response = await fetch(`${config.API_URL}/vectorstore/upload`, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) throw new Error("Upload failed");
 
-      toast.success("File(s) uploaded successfully!");
+      const { files: uploadedFiles }: { files: UploadedFile[] } =
+        await response.json();
+
+      const formatSize = (bytes: number): string => {
+        if (bytes >= 1024 * 1024)
+          return `${(bytes / (1024 * 1024)).toFixed(1)}Mb`;
+        if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)}Kb`;
+        return `${bytes}B`;
+      };
+
+      const uploaded = uploadedFiles
+        .filter((f) => f.status === "uploaded")
+        .map((f) => `${f.filename} [${formatSize(f.size)}]`);
+
+      const skipped = uploadedFiles
+        .filter((f) => f.status === "skipped")
+        .map((f) => `${f.filename} [${formatSize(f.size)}] (${f.reason})`);
+
+      const lines = [];
+      if (uploaded.length) lines.push(`Uploaded: ${uploaded.join(", ")}`);
+      if (skipped.length) lines.push(`Skipped: ${skipped.join(", ")}`);
+
+      const systemMessage = lines.join("\n");
+
+      setMessages((prev) => [...prev, { type: "system", text: systemMessage }]);
     } catch (error) {
       toast.error("Upload failed. Please try again.");
       console.error("Upload error:", error);
@@ -100,7 +135,7 @@ export default function ChatInput({
           <button
             type="button"
             onClick={onStop}
-            className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-4 py-2 rounded-lg"
+            className="bg-red-900 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg"
           >
             Stop
           </button>

@@ -73,6 +73,7 @@ export default function ChatPage() {
         input={userInput}
         setInput={setUserInput}
         onSubmit={handleSendMessage}
+        setMessages={setMessages}
       />
     </div>
   );

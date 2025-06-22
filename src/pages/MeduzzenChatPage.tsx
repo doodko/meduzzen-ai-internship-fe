@@ -171,6 +171,7 @@ export default function MeduzzenAssistantPage() {
         disableUpload={loading}
         loading={loading}
         onStop={handleStop}
+        setMessages={setMessages}
       />
     </div>
   );
