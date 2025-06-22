@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { ChatMessage, ChatSessionMeta } from "@/types/message";
+import { ChatMessage } from "@/types/message";
 import ChatSection from "@/components/ChatSection";
 
 import { useChatSocket } from "@/hooks/useChatSocket";
